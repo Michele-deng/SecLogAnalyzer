@@ -1,0 +1,18 @@
+Apr  5 08:00:01 webserver nginx: 192.168.1.10 - - [05/Apr/2026:08:00:01] "GET /index.html HTTP/1.1" 200 1024
+Apr  5 08:00:05 webserver nginx: 192.168.1.10 - - [05/Apr/2026:08:00:05] "GET /css/style.css HTTP/1.1" 200 856
+Apr  5 08:02:15 webserver nginx: 192.168.1.11 - - [05/Apr/2026:08:02:15] "GET /article?id=5 HTTP/1.1" 200 1560
+Apr  5 08:02:20 webserver nginx: 192.168.1.11 - - [05/Apr/2026:08:02:20] "GET /search?q=hello HTTP/1.1" 200 890
+Apr  5 08:05:30 webserver nginx: 192.168.1.12 - - [05/Apr/2026:08:05:30] "POST /login HTTP/1.1" 200 369
+Apr  5 08:10:11 webserver nginx: 192.168.1.13 - - [05/Apr/2026:08:10:11] "GET /index.php?id=1' UNION SELECT 1,2,3-- HTTP/1.1" 200 1024
+Apr  5 08:10:15 webserver nginx: 192.168.1.13 - - [05/Apr/2026:08:10:15] "GET /index.php?id=2' OR 1=1-- HTTP/1.1" 200 1024
+Apr  5 08:10:20 webserver nginx: 192.168.1.13 - - [05/Apr/2026:08:10:20] "GET /index.php?id=3' AND SLEEP(5)-- HTTP/1.1" 200 1024
+Apr  5 08:15:01 webserver nginx: 192.168.1.14 - - [05/Apr/2026:08:15:01] "GET /search?q=<script>alert(1)</script> HTTP/1.1" 200 512
+Apr  5 08:15:10 webserver nginx: 192.168.1.14 - - [05/Apr/2026:08:15:10] "GET /comment?text=<img onerror=alert(1) src=x> HTTP/1.1" 200 512
+Apr  5 08:20:01 webserver nginx: 192.168.1.15 - - [05/Apr/2026:08:20:01] "GET /download?file=../../../etc/passwd HTTP/1.1" 200 1024
+Apr  5 08:20:10 webserver nginx: 192.168.1.15 - - [05/Apr/2026:08:20:10] "GET /view?path=..%2F..%2F..%2Fetc%2Fshadow HTTP/1.1" 200 1024
+Apr  5 08:20:15 webserver nginx: 192.168.1.15 - - [05/Apr/2026:08:20:15] "GET /file?name=C:\boot.ini HTTP/1.1" 200 512
+Apr  5 08:25:01 webserver nginx: 192.168.1.16 - - [05/Apr/2026:08:25:01] "GET /ping?host=127.0.0.1;cat%20/etc/passwd HTTP/1.1" 200 1024
+Apr  5 08:25:10 webserver nginx: 192.168.1.16 - - [05/Apr/2026:08:25:10] "GET /exec?cmd=$(whoami) HTTP/1.1" 200 512
+Apr  5 08:25:15 webserver nginx: 192.168.1.16 - - [05/Apr/2026:08:25:15] "GET /run?input=test`id` HTTP/1.1" 200 512
+Apr  5 08:30:01 webserver nginx: 192.168.1.10 - - [05/Apr/2026:08:30:01] "GET /about HTTP/1.1" 200 2048
+Apr  5 08:30:05 webserver nginx: 192.168.1.10 - - [05/Apr/2026:08:30:05] "GET /contact HTTP/1.1" 200 1536

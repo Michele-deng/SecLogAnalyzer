@@ -10,3 +10,13 @@ rules:
           pattern: "^403$"
     suppress_rules: ["sqli_or_bypass", "sqli_comment_trail", "sqli_tautology"]
 
+  - id: "wl_favicon_traversal"
+    name: "浏览器 favicon 请求（非路径遍历）"
+    description: "部分浏览器会请求 favicon.ico 等路径，属于正常行为而非路径遍历攻击"
+    condition:
+      all_of:
+        - field: "uri"
+          pattern: "favicon\\.ico$"
+        - field: "status"
+          pattern: "^(404|200)$"
+    suppress_rules: ["path_traversal_dotdot", "path_traversal_encoded"]

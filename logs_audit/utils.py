@@ -71,15 +71,21 @@ def process_chunk(lines_chunk, start_line_no, rules, whitelist):
 
                 # 3. 如果命中了规则，记录攻击详情
                 if hits:
-                    # 按规则类型分类统计 SQLi 和 XSS
+                    # 按规则类型分类统计（SQLi / XSS / 路径遍历 / 命令注入）
                     rule_ids = [h['rule_id'] for h in hits]
                     has_sqli = any(rid.startswith('sqli_') for rid in rule_ids)
                     has_xss = any(rid.startswith('xss_') for rid in rule_ids)
+                    has_traversal = any(rid.startswith('path_traversal_') for rid in rule_ids)
+                    has_cmdi = any(rid.startswith('cmdi_') for rid in rule_ids)
 
                     if has_sqli:
                         chunk_sqli += 1
                     if has_xss:
                         chunk_xss += 1
+                    if has_traversal:
+                        pass  # 路径遍历在 attack_details.type 中体现
+                    if has_cmdi:
+                        pass  # 命令注入同上
 
                     # 拼装攻击类型标签
                     attack_type = []
@@ -87,6 +93,10 @@ def process_chunk(lines_chunk, start_line_no, rules, whitelist):
                         attack_type.append("SQL注入")
                     if has_xss:
                         attack_type.append("XSS攻击")
+                    if has_traversal:
+                        attack_type.append("路径遍历")
+                    if has_cmdi:
+                        attack_type.append("命令注入")
 
                     # 打包攻击详情（新增 severity/mitre_tags/matched_rules 字段）
                     chunk_details.append({

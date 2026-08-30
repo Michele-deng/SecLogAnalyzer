@@ -14,6 +14,12 @@
         #analysis-chart { height: 300px; width: 100%; }
         #ip-bar-chart { height: 300px; width: 100%; }
         .attack-line { font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; }
+        .badge-severity-critical { background-color: #dc3545; }
+        .badge-severity-high { background-color: #fd7e14; }
+        .badge-severity-medium { background-color: #ffc107; color: #000; }
+        .badge-severity-low { background-color: #6c757d; }
+        .badge-traversal { background-color: #6f42c1; }
+        .badge-cmdi { background-color: #343a40; }
     </style>
 </head>
 <body>
@@ -124,7 +130,8 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 70px;">行号</th>
-                                        <th style="width: 100px;">攻击类型</th>
+                                        <th style="width: 130px;">攻击类型</th>
+                                        <th style="width: 70px;">严重等级</th>
                                         <th style="width: 130px;">源IP</th>
                                         <th>原始日志内容</th>
                                     </tr>
@@ -134,15 +141,43 @@
                                     <tr>
                                         <td><code>{{ detail.line_no }}</code></td>
                                         <td>
+                                            {# --- 攻击类型 badge --- #}
                                             {% if "SQL注入" in detail.type %}
                                             <span class="badge bg-danger">SQL注入</span>
                                             {% endif %}
                                             {% if "XSS攻击" in detail.type %}
                                             <span class="badge bg-warning text-dark">XSS攻击</span>
                                             {% endif %}
+                                            {% if "路径遍历" in detail.type %}
+                                            <span class="badge badge-traversal">路径遍历</span>
+                                            {% endif %}
+                                            {% if "命令注入" in detail.type %}
+                                            <span class="badge badge-cmdi">命令注入</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {# --- 严重等级 badge --- #}
+                                            {% if detail.severity == 'critical' %}
+                                            <span class="badge badge-severity-critical">Critical</span>
+                                            {% elif detail.severity == 'high' %}
+                                            <span class="badge badge-severity-high">High</span>
+                                            {% elif detail.severity == 'medium' %}
+                                            <span class="badge badge-severity-medium">Medium</span>
+                                            {% elif detail.severity == 'low' %}
+                                            <span class="badge badge-severity-low">Low</span>
+                                            {% endif %}
                                         </td>
                                         <td><code>{{ detail.ip }}</code></td>
-                                        <td class="attack-line text-break">{{ detail.content }}</td>
+                                        <td>
+                                            <div class="attack-line text-break">{{ detail.content }}</div>
+                                            {% if detail.mitre_tags %}
+                                            <div class="mt-1">
+                                                {% for tag in detail.mitre_tags %}
+                                                <span class="badge bg-light text-dark" style="font-size: 0.7rem;">{{ tag }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -186,7 +221,7 @@
                 },
                 labelLine: { show: false },
                 data: {{ chart_data|safe }},
-                color: ['#198754', '#dc3545', '#ffc107']
+                color: ['#198754', '#dc3545', '#ffc107', '#6f42c1', '#343a40']
             }]
         };
         pieChart.setOption(pieOption);

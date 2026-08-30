@@ -1,0 +1,27 @@
+{
+  "file": "test_log_syslog.log",
+  "format": "syslog_rfc3164",
+  "total_lines": 19,
+  "description": "Syslog (RFC 3164) wrapping Nginx combined log ground truth - per-line annotation",
+  "labels": [
+    {"line": 1,  "expected": false, "type": null,           "note": "GET /index.html normal"},
+    {"line": 2,  "expected": false, "type": null,           "note": "GET /css/style.css static"},
+    {"line": 3,  "expected": false, "type": null,           "note": "GET /article?id=5 normal"},
+    {"line": 4,  "expected": false, "type": null,           "note": "GET /search?q=hello normal"},
+    {"line": 5,  "expected": false, "type": null,           "note": "POST /login normal"},
+    {"line": 6,  "expected": true,  "type": "sqli",         "note": "UNION SELECT via syslog"},
+    {"line": 7,  "expected": true,  "type": "sqli",         "note": "OR 1=1 via syslog"},
+    {"line": 8,  "expected": true,  "type": "sqli",         "note": "SLEEP blind injection via syslog"},
+    {"line": 9,  "expected": true,  "type": "xss",          "note": "script tag via syslog"},
+    {"line": 10, "expected": true,  "type": "xss",          "note": "img onerror via syslog"},
+    {"line": 11, "expected": true,  "type": "traversal",    "note": "../../../etc/passwd via syslog"},
+    {"line": 12, "expected": true,  "type": "traversal",    "note": "etc/shadow URL encoded via syslog"},
+    {"line": 13, "expected": true,  "type": "traversal",    "note": "Windows boot.ini via syslog"},
+    {"line": 14, "expected": true,  "type": "cmdi",         "note": "shell operator ;cat via syslog"},
+    {"line": 15, "expected": true,  "type": "cmdi",         "note": "$() command substitution via syslog"},
+    {"line": 16, "expected": true,  "type": "cmdi",         "note": "backtick command injection via syslog"},
+    {"line": 17, "expected": false, "type": null,           "note": "GET /about normal"},
+    {"line": 18, "expected": false, "type": null,           "note": "GET /contact normal"},
+    {"line": 19, "expected": false, "type": null,           "note": "empty line"}
+  ]
+}

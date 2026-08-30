@@ -1,0 +1,30 @@
+{
+  "file": "test_log_json.log",
+  "format": "json_access_log",
+  "total_lines": 22,
+  "description": "JSON format access log ground truth - per-line annotation for precision/recall evaluation",
+  "labels": [
+    {"line": 1,  "expected": false, "type": null,           "note": "GET /index.html normal"},
+    {"line": 2,  "expected": false, "type": null,           "note": "GET /css/style.css static"},
+    {"line": 3,  "expected": false, "type": null,           "note": "GET /article?id=5 normal"},
+    {"line": 4,  "expected": false, "type": null,           "note": "GET /search?q=hello normal"},
+    {"line": 5,  "expected": false, "type": null,           "note": "POST /login normal"},
+    {"line": 6,  "expected": false, "type": null,           "note": "GET /user/profile normal"},
+    {"line": 7,  "expected": false, "type": null,           "note": "GET /api/data?page=2 normal"},
+    {"line": 8,  "expected": true,  "type": "sqli",         "note": "UNION SELECT via JSON request_uri"},
+    {"line": 9,  "expected": true,  "type": "sqli",         "note": "OR 1=1 via JSON request_uri"},
+    {"line": 10, "expected": true,  "type": "sqli",         "note": "SLEEP blind injection via JSON"},
+    {"line": 11, "expected": true,  "type": "xss",          "note": "script tag via JSON request_uri"},
+    {"line": 12, "expected": true,  "type": "xss",          "note": "img onerror via JSON request_uri"},
+    {"line": 13, "expected": true,  "type": "traversal",    "note": "../../../etc/passwd via JSON"},
+    {"line": 14, "expected": true,  "type": "traversal",    "note": "etc/shadow via JSON URL encoded"},
+    {"line": 15, "expected": true,  "type": "traversal",    "note": "Windows boot.ini via JSON"},
+    {"line": 16, "expected": true,  "type": "cmdi",         "note": "shell operator ;cat via JSON"},
+    {"line": 17, "expected": true,  "type": "cmdi",         "note": "$() command substitution via JSON"},
+    {"line": 18, "expected": true,  "type": "cmdi",         "note": "backtick command injection via JSON"},
+    {"line": 19, "expected": false, "type": null,           "note": "GET /about normal"},
+    {"line": 20, "expected": false, "type": null,           "note": "GET /contact normal"},
+    {"line": 21, "expected": false, "type": null,           "note": "POST /api/submit normal"},
+    {"line": 22, "expected": false, "type": null,           "note": "empty line"}
+  ]
+}

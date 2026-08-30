@@ -1,0 +1,66 @@
+rules:
+  - id: "path_traversal_dotdot"
+    name: "路径遍历-目录穿越"
+    description: "检测 ../ 等目录穿越攻击，攻击者通过相对路径跳出 Web 根目录访问任意文件"
+    severity: "high"
+    mitre_tags: ["T1083"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "\\.\\./"
+      - "\\.\\.\\\\"
+      - "%2e%2e%2f"
+      - "%2e%2e/"
+      - "\\.\\.%2f"
+      - "%2e%2e%5c"
+    case_insensitive: true
+
+  - id: "path_traversal_etc"
+    name: "路径遍历-敏感文件读取(Linux)"
+    description: "检测读取 /etc/passwd、/etc/shadow、/proc/self 等 Linux 敏感系统文件的攻击"
+    severity: "critical"
+    mitre_tags: ["T1083"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "/etc/(passwd|shadow|group|hosts|crontab|sudoers)"
+      - "/proc/(self|version|cpuinfo|meminfo)"
+      - "/var/log/(auth|syslog|messages|secure)"
+    case_insensitive: true
+
+  - id: "path_traversal_win"
+    name: "路径遍历-敏感文件读取(Windows)"
+    description: "检测读取 boot.ini、win.ini、system32 等 Windows 敏感系统文件的攻击"
+    severity: "critical"
+    mitre_tags: ["T1083"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "boot\\.ini"
+      - "win\\.ini"
+      - "system32"
+      - "windows\\\\system"
+      - "drivers\\\\etc\\\\hosts"
+    case_insensitive: true
+
+  - id: "path_traversal_null_byte"
+    name: "路径遍历-空字节注入"
+    description: "检测使用 %00 空字节截断绕过文件扩展名检查的攻击手法"
+    severity: "high"
+    mitre_tags: ["T1083"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "%00"
+      - "\\\\x00"
+    case_insensitive: true
+
+  - id: "path_traversal_encoded"
+    name: "路径遍历-双重编码绕过"
+    description: "检测使用双重 URL 编码的目录穿越攻击，用于绕过 WAF 过滤规则"
+    severity: "high"
+    mitre_tags: ["T1083"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "%252e%252e%252f"
+      - "%252e%252e/"
+      - "%c0%ae%c0%ae%c0%af"
+      - "%c1%9c"
+    case_insensitive: true
+

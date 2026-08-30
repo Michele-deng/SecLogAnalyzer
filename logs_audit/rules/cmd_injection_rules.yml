@@ -1,0 +1,44 @@
+rules:
+  - id: "cmdi_shell_operators"
+    name: "命令注入-Shell操作符"
+    description: "检测使用分号、管道符、&& 等 Shell 操作符注入系统命令的攻击"
+    severity: "critical"
+    mitre_tags: ["T1059"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "[;|&]\\s*(ls|cat|whoami|id|uname|wget|curl|bash|sh|nc|netcat|python|perl|ruby|php|nmap|ifconfig|ipconfig)\\b"
+      - "[;|&]\\s*(rm|mv|cp|chmod|chown|mkdir|touch|kill|pkill|ps|top|df|mount)\\b"
+    case_insensitive: true
+
+  - id: "cmdi_backtick"
+    name: "命令注入-反引号执行"
+    description: "检测使用反引号 ` 包裹命令进行命令替换注入的攻击手法"
+    severity: "critical"
+    mitre_tags: ["T1059"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "`[^`]{2,}`"
+    case_insensitive: true
+
+  - id: "cmdi_dollar_paren"
+    name: "命令注入-命令替换"
+    description: "检测使用 $() 语法进行命令替换注入的攻击手法"
+    severity: "critical"
+    mitre_tags: ["T1059"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "\\$\\([^)]{2,}\\)"
+    case_insensitive: true
+
+  - id: "cmdi_time_delay"
+    name: "命令注入-时间延迟探测"
+    description: "检测使用 sleep、ping 等命令进行时间延迟盲注探测的攻击手法"
+    severity: "high"
+    mitre_tags: ["T1059"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "sleep\\s+\\d+"
+      - "ping\\s+.*-c\\s+\\d+"
+      - "ping\\s+.*-n\\s+\\d+"
+    case_insensitive: true
+

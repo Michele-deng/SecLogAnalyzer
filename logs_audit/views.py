@@ -25,6 +25,20 @@ def index(request):
     # 1. 如果用户点击了“上传”按钮（提交了 POST 表单，且上传了名为 log_file 的文件）
     if request.method == 'POST' and request.FILES.get('log_file'):
         log_file = request.FILES['log_file']
+
+        # ---- 文件上传安全校验 ----
+        # 1. 扩展名白名单
+        allowed_extensions = ('.log', '.txt', '.csv', '.json')
+        file_ext = os.path.splitext(log_file.name)[1].lower()
+        if file_ext not in allowed_extensions:
+            messages.error(request, f"不支持的文件类型 '{file_ext}'，仅允许 {', '.join(allowed_extensions)}")
+            return redirect('index')
+
+        # 2. 文件大小限制（10MB）
+        max_size = 10 * 1024 * 1024  # 10MB
+        if log_file.size > max_size:
+            messages.error(request, f"文件过大（{log_file.size / 1024 / 1024:.1f}MB），最大允许 10MB")
+            return redirect('index')
         
         try:
             # 1. 保存原始记录，并关联到当前用户
@@ -93,12 +107,17 @@ def log_detail(request, pk):
     attack_count = len(log_file.attack_details)
     normal_count = max(0, log_file.total_lines - attack_count)
     
-    #拼装成前端 ECharts 能够识别的 JSON/数组结构
-    chart_data = [
-        {'value': normal_count, 'name': '正常流量'},
-        {'value': log_file.sqli_count, 'name': 'SQL注入'},
-        {'value': log_file.xss_count, 'name': 'XSS攻击'},
-    ]
+    # 按实际攻击类型动态统计饼图数据
+    attack_type_counter = Counter()
+    for detail in log_file.attack_details:
+        for t in detail.get('type', '').split(', '):
+            t = t.strip()
+            if t:
+                attack_type_counter[t] += 1
+
+    chart_data = [{'value': normal_count, 'name': '正常流量'}]
+    for attack_type, count in attack_type_counter.items():
+        chart_data.append({'value': count, 'name': attack_type})
 
     # 统计 Top 5 攻击源 IP
     ip_counter = Counter()
