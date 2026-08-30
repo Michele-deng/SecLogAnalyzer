@@ -1,0 +1,78 @@
+{
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "accuracy": 1.0,
+  "tp": 24,
+  "fp": 0,
+  "fn": 0,
+  "tn": 19,
+  "fp_lines": [],
+  "fn_lines": [],
+  "rule_stats": {
+    "sqli_union_select": {
+      "count": 8,
+      "severity": "critical"
+    },
+    "sqli_or_bypass": {
+      "count": 4,
+      "severity": "high"
+    },
+    "sqli_tautology": {
+      "count": 3,
+      "severity": "high"
+    },
+    "sqli_sleep_blind": {
+      "count": 1,
+      "severity": "medium"
+    },
+    "xss_script_tag": {
+      "count": 4,
+      "severity": "critical"
+    },
+    "xss_alert_call": {
+      "count": 7,
+      "severity": "high"
+    },
+    "xss_event_handler": {
+      "count": 3,
+      "severity": "critical"
+    },
+    "xss_javascript_uri": {
+      "count": 1,
+      "severity": "critical"
+    },
+    "xss_iframe_tag": {
+      "count": 1,
+      "severity": "high"
+    },
+    "sqli_select_from_table": {
+      "count": 4,
+      "severity": "critical"
+    },
+    "sqli_info_funcs": {
+      "count": 3,
+      "severity": "high"
+    },
+    "sqli_subquery_probe": {
+      "count": 2,
+      "severity": "high"
+    },
+    "sqli_schema_probe": {
+      "count": 1,
+      "severity": "critical"
+    },
+    "sqli_comment_trail": {
+      "count": 1,
+      "severity": "high"
+    },
+    "xss_svg_onload": {
+      "count": 1,
+      "severity": "critical"
+    },
+    "xss_body_onload": {
+      "count": 1,
+      "severity": "critical"
+    }
+  }
+}
