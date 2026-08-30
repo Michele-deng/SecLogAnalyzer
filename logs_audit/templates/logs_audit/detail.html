@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析详情 - {{ log.filename }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .detail-card { margin-top: 2rem; }
+        #analysis-chart { height: 300px; width: 100%; }
+        #ip-bar-chart { height: 300px; width: 100%; }
+        .attack-line { font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">LogAuditProject</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">返回列表</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if request.user.is_authenticated %}
+                    <span class="navbar-text text-light me-3">欢迎, {{ request.user.username }}</span>
+                    {% if request.user.is_staff %}
+                    <a href="/admin/" class="btn btn-sm btn-outline-info me-2">后台管理</a>
+                    {% endif %}
+                    <form action="{% url 'logout' %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-light">退出登录</button>
+                    </form>
+                    {% else %}
+                    <a href="/admin/login/?next=/" class="btn btn-sm btn-outline-light">管理员登录</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container detail-card">
+        <div class="row">
+            <!-- 左侧：基本统计信息 -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">基本统计</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                文件名
+                                <span class="text-muted small text-break">{{ log.filename }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                总行数
+                                <span class="badge bg-secondary rounded-pill">{{ log.total_lines }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                SQL 注入数
+                                <span class="badge bg-danger rounded-pill">{{ log.sqli_count }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                XSS 攻击数
+                                <span class="badge bg-warning text-dark rounded-pill">{{ log.xss_count }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                上传时间
+                                <span class="text-muted small">{{ log.upload_time|date:"Y-m-d H:i:s" }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'export_log_csv' log.pk %}"
+                           class="btn btn-success w-100">
+                            ⬇ 导出离线报告 (CSV)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：图表与攻击详情 -->
+            <div class="col-md-8">
+                <!-- 图表区域：流量分布饼图 + Top 5 IP 柱状图 -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">流量分布</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="analysis-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Top 5 攻击源 IP 溯源</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="ip-bar-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 攻击详情列表 -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">攻击详情提取</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if log.attack_details %}
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 70px;">行号</th>
+                                        <th style="width: 100px;">攻击类型</th>
+                                        <th style="width: 130px;">源IP</th>
+                                        <th>原始日志内容</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detail in log.attack_details %}
+                                    <tr>
+                                        <td><code>{{ detail.line_no }}</code></td>
+                                        <td>
+                                            {% if "SQL注入" in detail.type %}
+                                            <span class="badge bg-danger">SQL注入</span>
+                                            {% endif %}
+                                            {% if "XSS攻击" in detail.type %}
+                                            <span class="badge bg-warning text-dark">XSS攻击</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><code>{{ detail.ip }}</code></td>
+                                        <td class="attack-line text-break">{{ detail.content }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <p class="mb-0">未发现明显的安全风险行</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="text-end mt-2">
+                    <small class="text-muted" style="font-size: 0.75rem;">分析引擎：基于多线程正则匹配</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ECharts 脚本 -->
+    <script>
+        // 饼图：流量分布
+        var pieDom = document.getElementById('analysis-chart');
+        var pieChart = echarts.init(pieDom);
+        var pieOption = {
+            tooltip: { trigger: 'item' },
+            legend: { bottom: '5%', left: 'center' },
+            series: [{
+                name: '分析结果',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: { show: false, position: 'center' },
+                emphasis: {
+                    label: { show: true, fontSize: 16, fontWeight: 'bold' }
+                },
+                labelLine: { show: false },
+                data: {{ chart_data|safe }},
+                color: ['#198754', '#dc3545', '#ffc107']
+            }]
+        };
+        pieChart.setOption(pieOption);
+
+        // 柱状图：Top 5 攻击源 IP
+        var barDom = document.getElementById('ip-bar-chart');
+        var barChart = echarts.init(barDom);
+        var barOption = {
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                type: 'category',
+                data: {{ top_ip_labels|safe }},
+                axisLabel: { rotate: 30 }
+            },
+            yAxis: { type: 'value', name: '攻击次数' },
+            series: [{
+                name: '攻击次数',
+                type: 'bar',
+                data: {{ top_ip_counts|safe }},
+                itemStyle: {
+                    borderRadius: [5, 5, 0, 0],
+                    color: '#dc3545'
+                },
+                label: {
+                    show: true,
+                    position: 'top'
+                }
+            }],
+            grid: { top: '8%', bottom: '20%', left: '12%', right: '8%' }
+        };
+        barChart.setOption(barOption);
+
+        window.addEventListener('resize', function() {
+            pieChart.resize();
+            barChart.resize();
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
