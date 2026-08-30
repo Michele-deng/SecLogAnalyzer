@@ -27,3 +27,4 @@ media/
 Thumbs.db
 Desktop.ini
 .DS_Store
+_debug.py

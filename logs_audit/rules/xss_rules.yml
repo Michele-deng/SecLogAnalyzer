@@ -1,0 +1,82 @@
+rules:
+  - id: "xss_script_tag"
+    name: "XSS攻击-script标签"
+    description: "检测 <script> 标签注入，最常见的 XSS 攻击载体"
+    severity: "critical"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "<\\s*script[^>]*>"
+    case_insensitive: true
+
+  - id: "xss_alert_call"
+    name: "XSS攻击-alert调用"
+    description: "检测 alert() / confirm() / prompt() 等JS弹窗调用"
+    severity: "high"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "(alert|confirm|prompt)\\s*\\("
+    case_insensitive: true
+
+  - id: "xss_event_handler"
+    name: "XSS攻击-事件处理器"
+    description: "检测 onerror= / onload= / onmouseover= / onclick= 等HTML事件处理器"
+    severity: "critical"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "on(error|load|mouseover|click|focus|blur|submit|input|change)\\s*="
+    case_insensitive: true
+
+  - id: "xss_javascript_uri"
+    name: "XSS攻击-JavaScript伪协议"
+    description: "检测 javascript: / vbscript: 伪协议注入"
+    severity: "critical"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "(javascript|vbscript)\\s*:"
+    case_insensitive: true
+
+  - id: "xss_iframe_tag"
+    name: "XSS攻击-iframe标签"
+    description: "检测 <iframe> 标签注入，常用于加载恶意页面"
+    severity: "high"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "<\\s*iframe"
+    case_insensitive: true
+
+  - id: "xss_svg_onload"
+    name: "XSS攻击-SVG注入"
+    description: "检测 <svg> 配合 onload/onerror 事件的 XSS 攻击"
+    severity: "critical"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "<\\s*svg[^>]*on(error|load)\\s*="
+      - "<\\s*svg[^>]*>"
+    case_insensitive: true
+
+  - id: "xss_data_uri_b64"
+    name: "XSS攻击-Data URI编码"
+    description: "检测 data:text/html;base64 数据URI编码的 XSS 载荷"
+    severity: "high"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "data\\s*:\\s*text/html"
+    case_insensitive: true
+
+  - id: "xss_body_onload"
+    name: "XSS攻击-body标签"
+    description: "检测 <body> 配合 onload 事件的 XSS 攻击"
+    severity: "critical"
+    mitre_tags: ["T1189"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "<\\s*body[^>]*onload\\s*="
+    case_insensitive: true
+

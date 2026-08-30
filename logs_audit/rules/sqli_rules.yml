@@ -1,0 +1,138 @@
+rules:
+  - id: "sqli_union_select"
+    name: "SQL注入-UNION SELECT"
+    description: "检测 UNION SELECT 语句注入，攻击者通过联合查询从其他表提取数据"
+    severity: "critical"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "union\\s+(all\\s+)?select"
+    case_insensitive: true
+
+  - id: "sqli_or_bypass"
+    name: "SQL注入-OR逻辑绕过"
+    description: "检测 OR 1=1 / OR '1'='1' 等恒真条件绕过认证的攻击"
+    severity: "high"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "'\\s*or\\s+'[^']*'\\s*=\\s*'[^']*'"
+      - "'\\s*or\\s+\\d+\\s*=\\s*\\d+"
+      - "or\\s+\\d+\\s*=\\s\\d+"
+      - "or\\s+'[^']*'\\s*=\\s*'?[^\\s]*'?"
+    case_insensitive: true
+
+  - id: "sqli_comment_trail"
+    name: "SQL注入-注释截断"
+    description: "检测使用 -- 或 # 注释截断后续SQL语句的攻击手法"
+    severity: "high"
+    mitre_tags: ["T1190"]
+    target_fields: ["query"]
+    patterns:
+      - "'[^']*'\\s*--"
+      - "'[^']*'\\s*#"
+      - "'\\s*--"
+    case_insensitive: true
+
+  - id: "sqli_sleep_blind"
+    name: "SQL注入-时间盲注"
+    description: "检测 SLEEP() / BENCHMARK() / pg_sleep() 等时间盲注函数"
+    severity: "medium"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "sleep\\s*\\("
+      - "benchmark\\s*\\("
+      - "pg_sleep\\s*\\("
+    case_insensitive: true
+
+  - id: "sqli_error_based"
+    name: "SQL注入-报错注入"
+    description: "检测 EXTRACTVALUE / UPDATEXML / EXP(~) 等报错注入函数"
+    severity: "critical"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "extractvalue\\s*\\("
+      - "updatexml\\s*\\("
+      - "exp\\s*\\(\\s*~"
+    case_insensitive: true
+
+  - id: "sqli_subquery_probe"
+    name: "SQL注入-子查询探测"
+    description: "检测 EXISTS(SELECT / (SELECT COUNT 等子查询探测，用于获取数据库结构信息"
+    severity: "high"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "exists\\s*\\(\\s*select"
+      - "\\(\\s*select\\s+count\\s*\\("
+    case_insensitive: true
+
+  - id: "sqli_info_funcs"
+    name: "SQL注入-信息函数"
+    description: "检测 version() / database() / @@version / user() 等信息提取函数"
+    severity: "high"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "version\\s*\\(\\s*\\)"
+      - "database\\s*\\(\\s*\\)"
+      - "@@version"
+      - "user\\s*\\(\\s*\\)"
+      - "current_user\\s*\\(\\s*\\)"
+    case_insensitive: true
+
+  - id: "sqli_schema_probe"
+    name: "SQL注入-信息模式探测"
+    description: "检测 information_schema / table_name / column_name 等数据库元数据探测"
+    severity: "critical"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "information_schema"
+      - "table_name"
+      - "column_name"
+      - "sys\\.objects"
+      - "sys\\.tables"
+    case_insensitive: true
+
+  - id: "sqli_multi_stmt"
+    name: "SQL注入-堆叠查询"
+    description: "检测使用分号分隔的多语句注入，如 ; DROP TABLE / ; INSERT INTO"
+    severity: "critical"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - ";\\s*(drop|truncate|insert|update|delete|alter|create|exec)\\s"
+    case_insensitive: true
+
+  - id: "sqli_tautology"
+    name: "SQL注入-恒真式"
+    description: "检测 AND 1=1 / AND 1=2 等恒真/恒假式探测"
+    severity: "high"
+    mitre_tags: ["T1190"]
+    target_fields: ["query"]
+    patterns:
+      - "'\\s*(and|or)\\s+\\d+\\s*=\\s*\\d+"
+    case_insensitive: true
+
+  - id: "sqli_hex_encoded"
+    name: "SQL注入-十六进制编码"
+    description: "检测 0x 开头的十六进制编码注入载荷"
+    severity: "medium"
+    mitre_tags: ["T1190"]
+    target_fields: ["query"]
+    patterns:
+      - "0x[0-9a-fA-F]{8,}"
+    case_insensitive: true
+
+  - id: "sqli_select_from_table"
+    name: "SQL注入-SELECT FROM 表"
+    description: "检测直接从表中提取数据的 SELECT ... FROM 语句"
+    severity: "critical"
+    mitre_tags: ["T1190"]
+    target_fields: ["query", "uri"]
+    patterns:
+      - "select\\s+[^\\s]+\\s+from\\s+"
+    case_insensitive: true

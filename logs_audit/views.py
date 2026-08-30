@@ -10,6 +10,7 @@ from .utils import analyze_log
 import os
 import csv
 import logging
+from .loader import load_rules, load_whitelist
 
 # 获取当前模块的日志记录器
 logger = logging.getLogger(__name__)
@@ -36,6 +37,16 @@ def index(request):
             # 2. 立即进行分析
             file_path = new_log.file.path
             if os.path.exists(file_path):
+                # 检查规则是否能正常加载（analyze_log 内部也会加载，这里做前置检查给用户友好提示）
+                try:
+                    rules = load_rules()
+                    if not rules:
+                        messages.warning(request, "警告：检测规则为空，分析结果可能不准确。请检查 rules 目录。")
+                except Exception as e:
+                    logger.error(f"规则加载失败: {e}")
+                    messages.error(request, "检测规则加载失败，请检查 rules 目录配置。")
+                    return redirect('index')
+
                 analysis_results = analyze_log(file_path)
                 
                 if analysis_results.get('is_analyzed'):

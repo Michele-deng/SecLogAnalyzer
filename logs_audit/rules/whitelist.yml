@@ -1,0 +1,12 @@
+rules:
+  - id: "wl_admin_path_probe"
+    name: "管理后台路径探测（非注入）"
+    description: "访问 /admin/ 路径并返回403，属于路径探测而非SQL注入/XSS攻击"
+    condition:
+      all_of:
+        - field: "uri"
+          pattern: "^/admin/"
+        - field: "status"
+          pattern: "^403$"
+    suppress_rules: ["sqli_or_bypass", "sqli_comment_trail", "sqli_tautology"]
+
