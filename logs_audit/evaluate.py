@@ -1,4 +1,4 @@
-﻿"""
+"""
 评测脚本（Evaluator）
 
 功能：对比检测引擎输出与人工标注 ground truth，计算精确率/召回率/F1。
@@ -51,12 +51,7 @@ def find_test_pairs():
         if os.path.exists(gt_path):
             pairs.append((log_path, gt_path, basename))
 
-    # 搜索项目根目录（兼容 P0）
-    for log_path in sorted(glob.glob(os.path.join(PROJECT_ROOT, 'test_log*.log'))):
-        basename = os.path.basename(log_path).replace('.log', '')
-        gt_path = os.path.join(TEST_DATA_DIR, f'{basename}_ground_truth.json')
-        if os.path.exists(gt_path) and (log_path, gt_path, basename) not in pairs:
-            pairs.append((log_path, gt_path, basename))
+
 
     return pairs
 

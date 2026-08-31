@@ -1,6 +1,21 @@
 {
   "files": [
     {
+      "label": "test_log2",
+      "format": "nginx_combined",
+      "lines": 43,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "tp": 24,
+      "fp": 0,
+      "fn": 0,
+      "tn": 19,
+      "fp_lines": [],
+      "fn_lines": []
+    },
+    {
       "label": "test_log_json",
       "format": "json_access_log",
       "lines": 21,
@@ -27,21 +42,6 @@
       "fp": 0,
       "fn": 0,
       "tn": 7,
-      "fp_lines": [],
-      "fn_lines": []
-    },
-    {
-      "label": "test_log2",
-      "format": "nginx_combined",
-      "lines": 43,
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "accuracy": 1.0,
-      "tp": 24,
-      "fp": 0,
-      "fn": 0,
-      "tn": 19,
       "fp_lines": [],
       "fn_lines": []
     }
