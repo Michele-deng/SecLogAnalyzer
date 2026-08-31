@@ -33,6 +33,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'index' %}">首页</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">安全态势</a>
+                    </li>
                 </ul>
                 <div class="d-flex align-items-center">
                     {% if request.user.is_authenticated %}

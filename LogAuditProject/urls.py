@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),  # 包含登录、退出等内置路由
     path('logout/', LogoutView.as_view(next_page='/'), name='logout'),#访问 logout/ 时执行退出逻辑，退出后重定向到首页 (/)。
+    path('api/', include('logs_audit.api_urls')),
     path('', include('logs_audit.urls')),
     
 ]

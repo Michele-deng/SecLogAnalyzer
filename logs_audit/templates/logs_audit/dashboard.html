@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全态势仪表盘</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        #type-pie-chart { height: 320px; width: 100%; }
+        #severity-bar-chart { height: 320px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">LogAuditProject</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard' %}">安全态势</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if request.user.is_authenticated %}
+                    <span class="navbar-text text-light me-3">欢迎, {{ request.user.username }}</span>
+                    {% if request.user.is_staff %}
+                    <a href="/admin/" class="btn btn-sm btn-outline-info me-2">后台管理</a>
+                    {% endif %}
+                    <form action="{% url 'logout' %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-light">退出登录</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h4 class="mb-4">🛡️ 安全态势总览</h4>
+
+        <!-- 区域 A：统计卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm text-center">
+                    <div class="card-body">
+                        <div class="text-muted small">已分析文件</div>
+                        <div class="stat-value text-primary">{{ total_files }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm text-center">
+                    <div class="card-body">
+                        <div class="text-muted small">总分析行数</div>
+                        <div class="stat-value text-info">{{ total_lines }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm text-center">
+                    <div class="card-body">
+                        <div class="text-muted small">攻击检出总数</div>
+                        <div class="stat-value text-warning">{{ total_attacks }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card shadow-sm text-center">
+                    <div class="card-body">
+                        <div class="text-muted small">高危攻击</div>
+                        <div class="stat-value text-danger">{{ critical_attacks }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域 B + C：图表 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">攻击类型分布</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if type_chart_data %}
+                        <div id="type-pie-chart"></div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">暂无攻击数据</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">严重等级分布</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if severity_values %}
+                        <div id="severity-bar-chart"></div>
+                        {% else %}
+                        <div class="text-center text-muted py-5">暂无攻击数据</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域 D：最近分析记录 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">最近分析记录</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>分析行数</th>
+                                <th>攻击检出</th>
+                                <th>上传时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_data %}
+                            <tr>
+                                <td>{{ item.filename }}</td>
+                                <td>{{ item.total_lines }}</td>
+                                <td>
+                                    <span class="badge {% if item.attack_count > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ item.attack_count }}
+                                    </span>
+                                </td>
+                                <td>{{ item.upload_time|date:"Y-m-d H:i:s" }}</td>
+                                <td>
+                                    {% if item.status == 'success' %}
+                                    <span class="badge bg-success">分析成功</span>
+                                    {% elif item.status == 'failed' %}
+                                    <span class="badge bg-danger">分析失败</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">待分析</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.status == 'success' %}
+                                    <a href="{% url 'log_detail' item.id %}" class="btn btn-sm btn-outline-primary">详情</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">暂无分析记录</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ECharts 脚本 -->
+    <script>
+        // 攻击类型饼图
+        {% if type_chart_data %}
+        var typeDom = document.getElementById('type-pie-chart');
+        var typeChart = echarts.init(typeDom);
+        typeChart.setOption({
+            tooltip: { trigger: 'item' },
+            legend: { bottom: '5%', left: 'center' },
+            series: [{
+                name: '攻击类型',
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+                label: { show: false, position: 'center' },
+                emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
+                labelLine: { show: false },
+                data: {{ type_chart_data|safe }},
+                color: ['#dc3545', '#ffc107', '#6f42c1', '#343a40']
+            }]
+        });
+        {% endif %}
+
+        // 严重等级柱状图
+        {% if severity_values %}
+        var sevDom = document.getElementById('severity-bar-chart');
+        var sevChart = echarts.init(sevDom);
+        sevChart.setOption({
+            tooltip: { trigger: 'axis' },
+            xAxis: {
+                type: 'category',
+                data: {{ severity_labels|safe }},
+                axisLabel: { rotate: 0 }
+            },
+            yAxis: { type: 'value', name: '攻击数' },
+            series: [{
+                name: '攻击数',
+                type: 'bar',
+                data: {{ severity_values|safe }},
+                itemStyle: {
+                    borderRadius: [5, 5, 0, 0],
+                    color: function(params) {
+                        var colors = { critical: '#dc3545', high: '#fd7e14', medium: '#ffc107', low: '#6c757d' };
+                        return colors[params.name] || '#6c757d';
+                    }
+                },
+                label: { show: true, position: 'top' }
+            }],
+            grid: { top: '8%', bottom: '10%', left: '12%', right: '8%' }
+        });
+        {% endif %}
+
+        window.addEventListener('resize', function() {
+            {% if type_chart_data %}typeChart.resize();{% endif %}
+            {% if severity_values %}sevChart.resize();{% endif %}
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

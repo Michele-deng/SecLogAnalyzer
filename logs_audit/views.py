@@ -167,16 +167,66 @@ def export_log_csv(request, pk):
 
     return response# 返回文件流，触发浏览器下载
 
-"""
-def register(request):
-    
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('index')
-    else:
-        form = UserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
-"""
+@login_required
+def dashboard(request):
+    """
+    视图：安全态势仪表盘
+    聚合展示当前用户所有上传文件的安全态势总览。
+    """
+    user_files = LogFile.objects.filter(user=request.user, status='success')
+
+    # ---- 区域 A：顶部统计卡片 ----
+    total_files = user_files.count()
+    total_lines = sum(f.total_lines for f in user_files)
+
+    all_attacks = []
+    for f in user_files:
+        all_attacks.extend(f.attack_details or [])
+
+    total_attacks = len(all_attacks)
+    critical_attacks = sum(1 for a in all_attacks if a.get('severity') == 'critical')
+
+    # ---- 区域 B：攻击类型分布饼图 ----
+    type_counter = Counter()
+    for a in all_attacks:
+        for t in a.get('type', '').split(', '):
+            t = t.strip()
+            if t:
+                type_counter[t] += 1
+
+    type_chart_data = [{'value': count, 'name': atype} for atype, count in type_counter.items()]
+
+    # ---- 区域 C：严重等级分布柱状图 ----
+    severity_counter = Counter()
+    for a in all_attacks:
+        sev = a.get('severity', 'unknown')
+        severity_counter[sev] += 1
+
+    severity_order = ['critical', 'high', 'medium', 'low']
+    severity_labels = [s for s in severity_order if s in severity_counter]
+    severity_values = [severity_counter[s] for s in severity_labels]
+
+    # ---- 区域 D：最近 5 次分析记录 ----
+    recent_files = LogFile.objects.filter(user=request.user).order_by('-upload_time')[:5]
+    recent_data = []
+    for f in recent_files:
+        attack_count = len(f.attack_details) if f.attack_details else 0
+        recent_data.append({
+            'id': f.pk,
+            'filename': f.filename,
+            'upload_time': f.upload_time,
+            'total_lines': f.total_lines,
+            'attack_count': attack_count,
+            'status': f.status,
+        })
+
+    return render(request, 'logs_audit/dashboard.html', {
+        'total_files': total_files,
+        'total_lines': total_lines,
+        'total_attacks': total_attacks,
+        'critical_attacks': critical_attacks,
+        'type_chart_data': type_chart_data,
+        'severity_labels': severity_labels,
+        'severity_values': severity_values,
+        'recent_data': recent_data,
+    })

@@ -33,6 +33,7 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').sp
 
 INSTALLED_APPS = [
     'simpleui',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -164,3 +165,15 @@ SIMPLEUI_HOME_INFO = False  # 隐藏首页的 SimpleUI 广告信息
 SIMPLEUI_ANALYSIS = False   # 关闭使用分析
 SIMPLEUI_HOME_TITLE = '数据大盘'  # 首页标签名
 SIMPLEUI_LOGO = 'https://img.icons8.com/color/48/000000/security-checked--v1.png'  # 换一个网安风格的Logo
+
+# Django REST Framework 配置
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
